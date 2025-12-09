@@ -36,7 +36,7 @@
                 example = "/home/user/sequences/my_show.fseq";
               };
         
-              loopEnabled = lib.mkOption {
+              loop-enabled = lib.mkOption {
                 type = lib.types.bool;
                 description = "Enable continuous looping of the FSEQ sequence (corresponds to --loop-enabled).";
                 default = true;
@@ -48,32 +48,22 @@
               after = [ "network.target" ];
               wantedBy = [ "multi-user.target" ];
         
-              path = [ cfg.package ];
+              path = [ cfg.package pkgs.iputils ];
         
               # Build the execution command based on settings
-              script = lib.strings.escapeShellArgs (
-                [
-                  (lib.getExe cfg.package)
-                ]
-                # Flags that take values: --host, --port, --file
-                ++ lib.cli.toGNUCommandLineShell {
-                  host = cfg.settings.host;
-                  port = toString cfg.settings.port;
-                  file = cfg.settings.file;
-                }
-                # Flags that are simple booleans: --loop-enabled
-                ++ lib.cli.boolToFlags {
-                  "loop-enabled" = cfg.settings.loopEnabled;
-                }
-              );
-              
-              serviceConfig = {
-                Type = "exec";
-                StateDirectory = name;
-                DynamicUser = true;
-                Restart = "always";
+              script = toString [
+                "exec"
+                (with lib; pipe cfg.package [getExe builtins.baseNameOf escapeShellArg])
+		(lib.cli.toGNUCommandLineShell {} cfg.settings)
+              ];
+                
+                serviceConfig = {
+                  Type = "exec";
+                  StateDirectory = name;
+                  DynamicUser = true;
+                  Restart = "always";
+                };
               };
-            };
           };
         };
     };

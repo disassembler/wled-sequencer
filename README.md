@@ -127,7 +127,7 @@ Set the `enable` flag and configure the mandatory `host` and `file` settings.
       # port = 4048;
 
       # OPTIONAL: Looping (defaults to true)
-      # loopEnabled = false;
+      # loop-enabled = false;
     };
   };
 }
